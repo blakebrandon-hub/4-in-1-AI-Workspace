@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified AI Workspace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #1e293b 0%, #312e81 100%); min-height: 100vh; padding: 20px; color: #333; }
+        
+        /* Navigation */
+        .nav-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;}
+        .nav-btn { background: rgba(255, 255, 255, 0.1); color: white; border: 2px solid transparent; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active { background: white; color: #312e81; border-color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .nav-btn:hover:not(.active) { background: rgba(255, 255, 255, 0.2); }
+
+        /* Tabs */
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; padding: 30px; margin-bottom: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* Forms & Inputs */
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 1.1em; color: #1e293b; }
+        .label-desc { font-size: 0.85em; color: #64748b; font-weight: 400; margin-bottom: 8px; }
+        textarea, input[type="text"], input[type="file"] { width: 100%; padding: 15px; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 15px; margin-bottom: 20px; transition: border-color 0.3s; resize: vertical; }
+        textarea:focus, input[type="text"]:focus { outline: none; border-color: #667eea; }
+
+        /* Buttons */
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; width: 100%; margin-bottom: 10px; }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary { background: #f1f3f5; color: #495057; padding: 12px 30px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; width: 100%; margin-bottom: 10px;}
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-danger:hover { background: #c82333; }
+
+        /* Elements & Status */
+        .examples-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 20px; }
+        .example-item { padding: 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s; font-size: 14px;}
+        .example-item:hover { background: #e9ecef; }
+        
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; text-transform: uppercase; float: right; }
+        .status-running { background: #fef3c7; color: #92400e; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+        
+        .progress-bar { height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; margin: 20px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; width: 0%; }
+        
+        .logs-box { background: #1e293b; color: #e2e8f0; font-family: monospace; font-size: 13px; padding: 20px; border-radius: 8px; max-height: 250px; overflow-y: auto; margin-bottom: 20px; }
+        .list-item { background: #f8f9fa; border-left: 4px solid #667eea; padding: 12px; margin-bottom: 10px; border-radius: 4px; font-size: 14px; }
+        
+        .download-btn { display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px; transition: 0.3s;}
+        .download-btn:hover { background: #059669; transform: translateY(-2px);}
+        
+        .result-pre { background: #f8f9fa; padding: 20px; border-radius: 8px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-size: 13px; border: 1px solid #dee2e6;}
+
+        /* RAG Specific */
+        .stat-box { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-box .number { font-size: 1.8rem; font-weight: bold; color: #667eea; }
+        .status-toast { padding: 10px; border-radius: 6px; margin-bottom: 10px; display: none; }
+        .toast-success { background: #d4edda; color: #155724; display: block; }
+        .toast-error { background: #f8d7da; color: #721c24; display: block; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 16px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 40px; position: relative; }
+        .modal-close { position: absolute; top: 20px; right: 20px; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-container">
+        <button class="nav-btn active" onclick="switchTab('code')">💻 Multi-Agent Coder</button>
+        <button class="nav-btn" onclick="switchTab('essay')">📝 Academic Essay Writer</button>
+        <button class="nav-btn" onclick="switchTab('rag')">🧠 RAG Vector Store</button>
+    </div>
+
+    <div id="tab-code" class="tab-content active container">
+        <div class="header">
+            <h1>🤖 Multi-Agent System</h1>
+            <p>AI-powered code generation with autonomous planning, research, and execution.</p>
+        </div>
+        <div class="card">
+            <label>What would you like to build?</label>
+            <textarea id="codeGoal" rows="5" placeholder="E.g., Create a Pomodoro timer with HTML/JS/CSS..."></textarea>
+            
+            <div class="examples-box">
+                <div style="font-weight:bold; margin-bottom:10px;">💡 Example Projects (click to use):</div>
+                <div class="example-item" onclick="document.getElementById('codeGoal').value='Create a to-do list web app with local storage, task filtering, and a clean UI using vanilla JS.'">📊 To-do list app with local storage</div>
+                <div class="example-item" onclick="document.getElementById('codeGoal').value='Create an interactive color picker tool with RGB sliders, hex values, and clipboard copy using vanilla JS.'">🎨 Interactive color picker tool</div>
+                <div class="example-item" onclick="document.getElementById('codeGoal').value='Create a classic snake game on an HTML canvas with arrow keys, score tracking, and game over detection.'">🎮 Simple snake game</div>
+            </div>
+
+            <div class="grid-2">
+                <button id="codeGenBtn" class="btn-primary" onclick="startCodeGeneration()">Generate Project</button>
+                <button class="btn-secondary" onclick="document.getElementById('codeGoal').value=''; document.getElementById('codeStatusSection').style.display='none';">Clear</button>
+            </div>
+            
+            <div id="codeStatusSection" style="display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h3 style="display: inline-block;">Generation Progress</h3>
+                <span id="codeBadge" class="status-badge status-running">Running</span>
+                <div class="progress-bar"><div id="codeProgress" class="progress-fill"></div></div>
+                
+                <div class="grid-2" style="margin-bottom: 20px;">
+                    <div><h4 style="margin-bottom:10px;">Tasks Identified:</h4><div id="codeTasks"></div></div>
+                    <div>
+                        <h4 style="margin-bottom:10px;">Generated Files:</h4><div id="codeFiles"></div>
+                        <a id="codeDownload" class="download-btn" style="display: none;">📥 Download All Files (ZIP)</a>
+                    </div>
+                </div>
+                
+                <h4 style="margin-bottom:10px;">Activity Log:</h4>
+                <div id="codeLogs" class="logs-box"></div>
+
+                <div id="codeResultContainer" style="display: none;">
+                    <h4 style="margin-bottom:10px;">Final Raw Result:</h4>
+                    <pre id="codeResult" class="result-pre"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-essay" class="tab-content container">
+        <div class="header">
+            <h1>📚 Technical Essay Research Agent</h1>
+            <p>AI-powered deep research, outlining, and academic writing for college-level essays.</p>
+        </div>
+        <div class="card">
+            <label>Essay Topic</label>
+            <div class="label-desc">What technical subject would you like to write about?</div>
+            <input type="text" id="essayTopic" placeholder="E.g., The Impact of Quantum Computing on Cryptography">
+            
+            <label>Requirements & Guidelines</label>
+            <div class="label-desc">Specify length, focus areas, or any specific requirements (optional)</div>
+            <textarea id="essayReqs" rows="4" placeholder="E.g., 2000 words, focus on post-quantum solutions..."></textarea>
+            
+            <div class="examples-box">
+                <div style="font-weight:bold; margin-bottom:10px;">💡 Example Topics (click to use):</div>
+                <div class="example-item" onclick="fillEssayExample('The Evolution of Blockchain Consensus Mechanisms', '2000 words, compare PoW vs PoS, analyze energy consumption')">🔐 Blockchain Consensus Mechanisms</div>
+                <div class="example-item" onclick="fillEssayExample('CRISPR-Cas9: Technical Mechanisms and Ethical Implications', 'Explain molecular biology, discuss off-target effects and ethics')">🧬 CRISPR-Cas9: Mechanisms & Ethics</div>
+                <div class="example-item" onclick="fillEssayExample('Solid-State Battery Technology: Current Challenges', 'Explain solid electrolytes, dendrite formation, commercial timeline')">⚡ Solid-State Battery Technology</div>
+            </div>
+
+            <div class="grid-2">
+                <button id="essayGenBtn" class="btn-primary" onclick="startEssayGeneration()">Generate Essay</button>
+                <button class="btn-secondary" onclick="document.getElementById('essayTopic').value=''; document.getElementById('essayReqs').value=''; document.getElementById('essayStatusSection').style.display='none';">Clear</button>
+            </div>
+
+            <div id="essayStatusSection" style="display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h3 style="display: inline-block;">Phase: <span id="essayPhase" style="color:#667eea;">Initializing...</span></h3>
+                <span id="essayBadge" class="status-badge status-running">Running</span>
+                <div class="progress-bar"><div id="essayProgress" class="progress-fill"></div></div>
+                
+                <h4 style="margin-bottom:10px;">Activity Log:</h4>
+                <div id="essayLogs" class="logs-box"></div>
+
+                <div class="grid-2" style="margin-bottom: 20px;">
+                    <div><h4 style="margin-bottom:10px;">🔍 Research Areas:</h4><div id="essayTasks"></div></div>
+                    <div><h4 style="margin-bottom:10px;">📋 Essay Structure:</h4><div id="essayStructure"></div></div>
+                </div>
+
+                <div id="essayScoresContainer" style="display:none; margin-bottom: 20px;">
+                    <h4 style="margin-bottom:10px;">📊 AI Editorial Scores:</h4>
+                    <div id="essayScores" class="grid-2"></div>
+                </div>
+
+                <div id="essayCompleteSection" style="display:none; text-align:center; padding: 20px; border: 2px dashed #667eea; border-radius: 8px;">
+                    <h3 style="margin-bottom: 10px;">✅ Essay Complete!</h3>
+                    <a id="essayDownload" class="download-btn">📥 Download Word Document (.docx)</a>
+                    <br><br>
+                    <button class="btn-secondary" style="width:auto;" onclick="openEssayModal()">📄 View Full Essay Here</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="essayModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('essayModal').classList.remove('active')">✕</button>
+            <h2 style="margin-bottom: 25px;">Complete Essay</h2>
+            <div id="fullEssayText" style="white-space: pre-wrap; line-height: 1.8; color: #334155;"></div>
+        </div>
+    </div>
+
+    <div id="tab-resume" class="tab-content container">
+        <div class="header">
+            <h1>📄 AI Resume Builder</h1>
+            <p>Upload your code and current resume files to generate an ATS-optimized Word document.</p>
+        </div>
+        <div class="card">
+            <label>Target Role / Job Title <span style="color:#64748b; font-weight:normal; font-size: 0.9em;">(Optional)</span></label>
+            <input type="text" id="resumeRole" placeholder="E.g., Senior Full Stack Developer (Leave blank to auto-detect)">
+            
+            <label>Upload Context Files (Current Resume, Code Snippets)</label>
+            <div class="label-desc">Supported: .pdf, .docx, .py, .js, .html, .txt (Upload multiple)</div>
+            <input type="file" id="resumeFiles" multiple style="background: white;">
+            
+            <label>Additional Details / Job Description</label>
+            <div class="label-desc">Paste the job description you are applying for, or any specific achievements to highlight.</div>
+            <textarea id="resumeDesc" rows="5" placeholder="Company X is looking for..."></textarea>
+            
+            <div class="grid-2">
+                <button id="resumeGenBtn" class="btn-primary" onclick="startResumeGeneration()">Analyze & Build Resume</button>
+                <button class="btn-secondary" onclick="document.getElementById('resumeRole').value=''; document.getElementById('resumeDesc').value=''; document.getElementById('resumeFiles').value=''; document.getElementById('resumeStatusSection').style.display='none';">Clear</button>
+            </div>
+
+            <div id="resumeStatusSection" style="display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h3 style="display: inline-block;">Phase: <span id="resumePhase" style="color:#667eea;">Uploading & Initializing...</span></h3>
+                <span id="resumeBadge" class="status-badge status-running">Running</span>
+                <div class="progress-bar"><div id="resumeProgress" class="progress-fill"></div></div>
+                
+                <h4 style="margin-bottom:10px;">Activity Log:</h4>
+                <div id="resumeLogs" class="logs-box"></div>
+
+                <div id="resumeScoresContainer" style="display:none; margin-bottom: 20px;">
+                    <h4 style="margin-bottom:10px;">📊 ATS Editor Scores:</h4>
+                    <div id="resumeScores" class="grid-2"></div>
+                </div>
+
+                <div id="resumeCompleteSection" style="display:none; text-align:center; padding: 20px; border: 2px dashed #667eea; border-radius: 8px;">
+                    <h3 style="margin-bottom: 10px;">✅ Resume Complete!</h3>
+                    <a id="resumeDownload" class="download-btn">📥 Download Optimized Resume (.docx)</a>
+                    <br><br>
+                    <button class="btn-secondary" style="width:auto;" onclick="openResumeModal()">📄 View Full Resume Here</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resumeModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('resumeModal').classList.remove('active')">✕</button>
+            <h2 style="margin-bottom: 25px;">Optimized Resume Draft</h2>
+            <div id="fullResumeText" style="white-space: pre-wrap; line-height: 1.8; color: #334155;"></div>
+        </div>
+    </div>
+
+    <div id="tab-rag" class="tab-content container">
+        <div class="header">
+            <h1>🧠 RAG Vector Store</h1>
+            <p>Semantic search powered by sentence embeddings. (Memories stored here are used by Code & Essay Agents!)</p>
+        </div>
+        
+        <div class="grid-2" style="margin-bottom: 20px;">
+            <div class="stat-box">
+                <div class="number" id="ragCount">0</div>
+                <div style="color: #666; font-size: 0.9em;">Total Memories</div>
+            </div>
+            <div class="stat-box">
+                <div class="number" id="ragModelStatus">⏳</div>
+                <div style="color: #666; font-size: 0.9em;">Embedding Model Status</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="margin-bottom: 15px; color: #667eea;">📝 Store Memory</h2>
+                    <div id="ragStoreToast" class="status-toast"></div>
+                    <label>Text to Store:</label>
+                    <textarea id="ragText" rows="3" placeholder="Enter facts, code snippets, or knowledge..."></textarea>
+                    <label>Metadata (JSON, optional):</label>
+                    <input type="text" id="ragMeta" placeholder='{"category": "example"}'>
+                    <button class="btn-primary" onclick="storeRagMemory()">Store Memory</button>
+                </div>
+
+                <div class="card">
+                    <h2 style="margin-bottom: 15px; color: #667eea;">🔍 Query Store</h2>
+                    <div id="ragQueryToast" class="status-toast"></div>
+                    <label>Search Query:</label>
+                    <textarea id="ragQueryText" rows="2" placeholder="Enter your search query..."></textarea>
+                    <button class="btn-primary" onclick="queryRagStore()">Search</button>
+                    <div id="ragQueryResults" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: #667eea;">💾 Memory Database</h2>
+                <div id="ragListToast" class="status-toast"></div>
+                <button class="btn-secondary" onclick="loadRagMemories()">🔄 Refresh List</button>
+                
+                <div class="grid-2" style="margin-top: 10px; margin-bottom: 15px;">
+                    <button class="btn-secondary" onclick="pruneRagSize()">Prune by Size</button>
+                    <button class="btn-secondary" onclick="pruneRagDuplicates()">Remove Duplicates</button>
+                    <button class="btn-secondary" onclick="pruneRagAge()">Prune Old</button>
+                    <button class="btn-danger" onclick="clearRagStore()">Clear All</button>
+                </div>
+                
+                <div id="ragList" style="max-height: 450px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Navigation ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==========================================
+        // CODE AGENT LOGIC
+        // ==========================================
+        let codeJobId = null, codeInterval = null;
+        
+        async function startCodeGeneration() {
+            const goal = document.getElementById('codeGoal').value.trim();
+            if(!goal) return alert("Please enter a goal");
+            
+            document.getElementById('codeGenBtn').disabled = true;
+            document.getElementById('codeStatusSection').style.display = 'block';
+            document.getElementById('codeLogs').innerHTML = '';
+            document.getElementById('codeTasks').innerHTML = '';
+            document.getElementById('codeFiles').innerHTML = '';
+            document.getElementById('codeResultContainer').style.display = 'none';
+            document.getElementById('codeDownload').style.display = 'none';
+            
+            try {
+                const res = await fetch('/api/code/generate', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({goal})
+                });
+                codeJobId = (await res.json()).job_id;
+                codeInterval = setInterval(pollCodeStatus, 1000);
+            } catch(e) {
+                alert("Error starting generation: " + e.message);
+                document.getElementById('codeGenBtn').disabled = false;
+            }
+        }
+        
+        async function pollCodeStatus() {
+            try {
+                const res = await fetch(`/api/code/status/${codeJobId}`);
+                const data = await res.json();
+                
+                document.getElementById('codeBadge').className = `status-badge status-${data.status}`;
+                document.getElementById('codeBadge').innerText = data.status.toUpperCase();
+                document.getElementById('codeProgress').style.width = `${(data.current_iteration/5)*100}%`;
+                
+                const logsBox = document.getElementById('codeLogs');
+                logsBox.innerHTML = data.logs.map(l => `<div>> ${escapeHtml(l)}</div>`).join('');
+                logsBox.scrollTop = logsBox.scrollHeight;
+                
+                if(data.tasks) {
+                    document.getElementById('codeTasks').innerHTML = data.tasks.map(t => `<div class="list-item">✓ ${escapeHtml(t)}</div>`).join('');
+                }
+                if(data.files && data.files.length > 0) {
+                    document.getElementById('codeFiles').innerHTML = data.files.map(f => `<div class="list-item" style="font-family:monospace;">📄 ${escapeHtml(f)}</div>`).join('');
+                    document.getElementById('codeDownload').style.display = 'inline-block';
+                    document.getElementById('codeDownload').href = `/api/code/download/${codeJobId}`;
+                }
+
+                if(data.status === 'completed' || data.status === 'error') {
+                    clearInterval(codeInterval);
+                    document.getElementById('codeGenBtn').disabled = false;
+                    if(data.result) {
+                        document.getElementById('codeResultContainer').style.display = 'block';
+                        document.getElementById('codeResult').innerText = data.result;
+                    }
+                }
+            } catch(e) {
+                console.error("Code polling error:", e);
+            }
+        }
+
+        // ==========================================
+        // ESSAY AGENT LOGIC
+        // ==========================================
+        let essayJobId = null, essayInterval = null;
+
+        function fillEssayExample(topic, reqs) {
+            document.getElementById('essayTopic').value = topic;
+            document.getElementById('essayReqs').value = reqs;
+        }
+
+        async function startEssayGeneration() {
+            const topic = document.getElementById('essayTopic').value.trim();
+            const reqs = document.getElementById('essayReqs').value.trim();
+            if(!topic) return alert("Please enter an essay topic");
+            
+            document.getElementById('essayGenBtn').disabled = true;
+            document.getElementById('essayStatusSection').style.display = 'block';
+            document.getElementById('essayLogs').innerHTML = '';
+            document.getElementById('essayTasks').innerHTML = '';
+            document.getElementById('essayStructure').innerHTML = '';
+            document.getElementById('essayScoresContainer').style.display = 'none';
+            document.getElementById('essayCompleteSection').style.display = 'none';
+            
+            try {
+                const res = await fetch('/api/essay/generate', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({topic, requirements: reqs})
+                });
+                essayJobId = (await res.json()).job_id;
+                essayInterval = setInterval(pollEssayStatus, 1000);
+            } catch(e) {
+                alert("Error starting generation: " + e.message);
+                document.getElementById('essayGenBtn').disabled = false;
+            }
+        }
+
+        async function pollEssayStatus() {
+            try {
+                const res = await fetch(`/api/essay/status/${essayJobId}`);
+                const data = await res.json();
+
+                document.getElementById('essayBadge').className = `status-badge status-${data.status}`;
+                document.getElementById('essayBadge').innerText = data.status.toUpperCase();
+                document.getElementById('essayPhase').innerText = data.current_phase || "Initializing...";
+                
+                const logsBox = document.getElementById('essayLogs');
+                logsBox.innerHTML = data.logs.map(l => `<div>> ${escapeHtml(l)}</div>`).join('');
+                logsBox.scrollTop = logsBox.scrollHeight;
+                
+                // Progress map
+                let prog = 10;
+                if(data.current_phase.includes("Research")) prog = 35;
+                if(data.current_phase.includes("Outline")) prog = 50;
+                if(data.current_phase.includes("Writing")) prog = 50 + (data.current_iteration * 10);
+                if(data.current_phase.includes("Review")) prog = 85;
+                if(data.current_phase.includes("Document")) prog = 95;
+                if(data.current_phase.includes("Complete")) prog = 100;
+                document.getElementById('essayProgress').style.width = `${prog}%`;
+
+                if(data.research_tasks) document.getElementById('essayTasks').innerHTML = data.research_tasks.map(t => `<div class="list-item">${escapeHtml(t)}</div>`).join('');
+                if(data.structure) document.getElementById('essayStructure').innerHTML = data.structure.map(s => `<div class="list-item">${escapeHtml(s)}</div>`).join('');
+
+                if(data.scores && Object.keys(data.scores).length > 0) {
+                    document.getElementById('essayScoresContainer').style.display = 'block';
+                    document.getElementById('essayScores').innerHTML = Object.entries(data.scores)
+                        .map(([k,v]) => `<div class="stat-box" style="padding:10px;"><div class="number">${v}/10</div><div style="font-size:12px; text-transform:uppercase;">${k.replace('_',' ')}</div></div>`).join('');
+                }
+
+                if(data.has_file && data.status === 'completed') {
+                    document.getElementById('essayCompleteSection').style.display = 'block';
+                    document.getElementById('essayDownload').href = `/api/essay/download/${essayJobId}`;
+                }
+
+                if(data.status === 'completed' || data.status === 'error') {
+                    clearInterval(essayInterval);
+                    document.getElementById('essayGenBtn').disabled = false;
+                }
+            } catch(e) {
+                console.error("Essay polling error:", e);
+            }
+        }
+
+        async function openEssayModal() {
+            try {
+                const res = await fetch(`/api/essay/essay/${essayJobId}`);
+                const data = await res.json();
+                document.getElementById('fullEssayText').innerText = data.essay;
+                document.getElementById('essayModal').classList.add('active');
+            } catch (e) {
+                alert("Could not load essay text.");
+            }
+        }
+
+        // ==========================================
+        // RESUME BUILDER LOGIC (NEW)
+        // ==========================================
+        let resumeJobId = null, resumeInterval = null;
+
+        async function startResumeGeneration() {
+            const role = document.getElementById('resumeRole').value.trim();
+            const desc = document.getElementById('resumeDesc').value.trim();
+            const fileInput = document.getElementById('resumeFiles');
+            
+            // Replaced the strict role check with a general "give me something" check
+            if(!role && !desc && fileInput.files.length === 0) {
+                return alert("Please upload files or provide a target role to generate a resume.");
+            }
+            
+            document.getElementById('resumeGenBtn').disabled = true;
+            document.getElementById('resumeStatusSection').style.display = 'block';
+            document.getElementById('resumeLogs').innerHTML = '';
+            document.getElementById('resumeScoresContainer').style.display = 'none';
+            document.getElementById('resumeCompleteSection').style.display = 'none';
+
+            // Create FormData to send files + text
+            const formData = new FormData();
+            formData.append('target_role', role);
+            formData.append('job_description', desc);
+            for (const file of fileInput.files) {
+                formData.append('files', file);
+            }
+
+            try {
+                const res = await fetch('/api/resume/generate', {
+                    method: 'POST',
+                    body: formData // No content-type header, fetch handles it for FormData
+                });
+                resumeJobId = (await res.json()).job_id;
+                resumeInterval = setInterval(pollResumeStatus, 1000);
+            } catch(e) {
+                alert("Error: " + e.message);
+                document.getElementById('resumeGenBtn').disabled = false;
+            }
+        }
+
+        async function pollResumeStatus() {
+            try {
+                const res = await fetch(`/api/resume/status/${resumeJobId}`);
+                const data = await res.json();
+
+                document.getElementById('resumeBadge').className = `status-badge status-${data.status}`;
+                document.getElementById('resumeBadge').innerText = data.status.toUpperCase();
+                document.getElementById('resumePhase').innerText = data.current_phase || "Initializing...";
+                
+                const logsBox = document.getElementById('resumeLogs');
+                logsBox.innerHTML = data.logs.map(l => `<div>> ${escapeHtml(l)}</div>`).join('');
+                logsBox.scrollTop = logsBox.scrollHeight;
+                
+                // Progress Math
+                let prog = 10;
+                if(data.current_phase.includes("Extracting")) prog = 30;
+                if(data.current_phase.includes("Drafting")) prog = 40 + (data.current_iteration * 15);
+                if(data.current_phase.includes("Review")) prog = 85;
+                if(data.current_phase.includes("Formatting")) prog = 95;
+                if(data.current_phase.includes("Complete")) prog = 100;
+                document.getElementById('resumeProgress').style.width = `${prog}%`;
+
+                if(data.scores && Object.keys(data.scores).length > 0) {
+                    document.getElementById('resumeScoresContainer').style.display = 'block';
+                    document.getElementById('resumeScores').innerHTML = Object.entries(data.scores)
+                        .map(([k,v]) => `<div class="stat-box" style="padding:10px;"><div class="number">${v}/10</div><div style="font-size:12px; text-transform:uppercase;">${k.replace('_',' ')}</div></div>`).join('');
+                }
+
+                if(data.has_file && data.status === 'completed') {
+                    document.getElementById('resumeCompleteSection').style.display = 'block';
+                    document.getElementById('resumeDownload').href = `/api/resume/download/${resumeJobId}`;
+                }
+
+                if(data.status === 'completed' || data.status === 'error') {
+                    clearInterval(resumeInterval);
+                    document.getElementById('resumeGenBtn').disabled = false;
+                }
+            } catch(e) { console.error("Resume poll error:", e); }
+        }
+
+        async function openResumeModal() {
+            try {
+                const res = await fetch(`/api/resume/text/${resumeJobId}`);
+                const data = await res.json();
+                document.getElementById('fullResumeText').innerText = data.resume;
+                document.getElementById('resumeModal').classList.add('active');
+            } catch (e) { alert("Could not load resume text."); }
+        }
+
+
+        // ==========================================
+        // RAG VECTOR STORE LOGIC
+        // ==========================================
+        window.addEventListener('load', async () => {
+            try {
+                const res = await fetch('/api/rag/initialize', {method: 'POST'});
+                const data = await res.json();
+                document.getElementById('ragModelStatus').innerText = data.status === 'success' ? '✅ Ready' : '❌ Failed';
+                loadRagMemories();
+            } catch(e) {
+                document.getElementById('ragModelStatus').innerText = '❌ Error';
+            }
+        });
+
+        function showRagToast(id, msg, isError=false) {
+            const el = document.getElementById(id);
+            el.className = 'status-toast ' + (isError ? 'toast-error' : 'toast-success');
+            el.innerText = msg;
+            setTimeout(() => el.style.display = 'none', 4000);
+        }
+
+        async function storeRagMemory() {
+            const text = document.getElementById('ragText').value.trim();
+            const metaStr = document.getElementById('ragMeta').value.trim();
+            if(!text) return showRagToast('ragStoreToast', "Please enter text to store", true);
+            
+            let metadata = {};
+            if(metaStr) {
+                try { metadata = JSON.parse(metaStr); }
+                catch(e) { return showRagToast('ragStoreToast', "Invalid JSON in metadata", true); }
+            }
+
+            try {
+                const res = await fetch('/api/rag/store', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text, metadata})
+                });
+                const data = await res.json();
+                if(data.status==='success') {
+                    showRagToast('ragStoreToast', "Memory stored successfully!");
+                    document.getElementById('ragText').value = '';
+                    document.getElementById('ragMeta').value = '';
+                    loadRagMemories();
+                } else {
+                    showRagToast('ragStoreToast', data.message, true);
+                }
+            } catch(e) { showRagToast('ragStoreToast', e.message, true); }
+        }
+
+        async function queryRagStore() {
+            const query = document.getElementById('ragQueryText').value.trim();
+            if(!query) return showRagToast('ragQueryToast', "Please enter a search query", true);
+
+            try {
+                const res = await fetch('/api/rag/query', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query})
+                });
+                const data = await res.json();
+                
+                const resultsEl = document.getElementById('ragQueryResults');
+                if(data.results && data.results.length > 0) {
+                    resultsEl.innerHTML = data.results.map(r => `
+                        <div class="list-item">
+                            <span class="status-badge" style="float:none; display:inline-block; margin-bottom:5px; background:#667eea; color:white;">Match: ${(r.score*100).toFixed(1)}%</span>
+                            <div style="margin-top:5px;">${escapeHtml(r.text)}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    resultsEl.innerHTML = '<div style="color:#666;">No relevant results found.</div>';
+                }
+            } catch(e) { showRagToast('ragQueryToast', e.message, true); }
+        }
+
+        async function loadRagMemories() {
+            try {
+                const res = await fetch('/api/rag/list');
+                const data = await res.json();
+                document.getElementById('ragCount').innerText = data.count;
+                
+                if(data.count === 0) {
+                    document.getElementById('ragList').innerHTML = '<div style="color:#666; text-align:center;">No memories stored.</div>';
+                    return;
+                }
+
+                document.getElementById('ragList').innerHTML = data.memories.map(m => `
+                    <div class="list-item" style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                        <div>
+                            <div style="margin-bottom:5px;">${escapeHtml(m.text)}</div>
+                            <div style="font-size:0.8em; color:#666;">${new Date(m.timestamp * 1000).toLocaleString()}</div>
+                        </div>
+                        <button class="btn-danger" onclick="deleteRagMemory('${m.id}')">Delete</button>
+                    </div>
+                `).join('');
+            } catch(e) { console.error("Error loading memories:", e); }
+        }
+
+        async function deleteRagMemory(id) {
+            try {
+                const res = await fetch(`/api/rag/delete/${id}`, {method: 'DELETE'});
+                const data = await res.json();
+                showRagToast('ragListToast', data.message, data.status!=='success');
+                loadRagMemories();
+            } catch(e) { showRagToast('ragListToast', e.message, true); }
+        }
+
+        async function clearRagStore() {
+            if(confirm("Are you sure you want to delete ALL memories?")) {
+                await fetch('/api/rag/clear', {method: 'POST'});
+                showRagToast('ragListToast', "Memory store cleared");
+                loadRagMemories();
+            }
+        }
+
+        async function pruneRagSize() {
+            const size = prompt("Keep latest X memories. Enter X:", "100");
+            if(!size) return;
+            const res = await fetch('/api/rag/prune/size', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({max_memories: parseInt(size)})
+            });
+            const data = await res.json();
+            showRagToast('ragListToast', data.message);
+            loadRagMemories();
+        }
+
+        async function pruneRagDuplicates() {
+            const threshold = prompt("Enter similarity threshold (0.0 to 1.0):", "0.95");
+            if(!threshold) return;
+            const res = await fetch('/api/rag/prune/duplicates', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({threshold: parseFloat(threshold)})
+            });
+            const data = await res.json();
+            showRagToast('ragListToast', data.message);
+            loadRagMemories();
+        }
+
+        async function pruneRagAge() {
+            const hours = prompt("Remove memories older than X hours:", "24");
+            if(!hours) return;
+            const res = await fetch('/api/rag/prune/age', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({max_age_ms: parseInt(hours) * 3600000})
+            });
+            const data = await res.json();
+            showRagToast('ragListToast', data.message);
+            loadRagMemories();
+        }
+
+    </script>
+</body>
+</html>
