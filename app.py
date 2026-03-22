@@ -7,7 +7,7 @@ import zipfile
 from io import BytesIO
 import uuid
 
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, make_response
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from openai import OpenAI
@@ -525,6 +525,11 @@ def run_resume_agent(target_role, job_desc, file_context, job_id):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/api/<path:path>', methods=['OPTIONS'])
+def handle_options(path):
+    return "", 200
 
 
 # ---------------------------------------------------
