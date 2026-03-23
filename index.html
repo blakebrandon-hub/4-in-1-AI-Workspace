@@ -79,27 +79,6 @@
         .filter-tab:hover { border-color: #667eea; }
         .filter-tab.active { background: #667eea; color: white; border-color: #667eea; }
         
-        /* Chatbot */
-        .chatbot-toggle { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; z-index: 1000; transition: transform 0.2s; }
-        .chatbot-toggle:hover { transform: scale(1.1); }
-        .chatbot-window { position: fixed; bottom: 100px; right: 30px; width: 400px; height: 600px; background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: none; flex-direction: column; z-index: 1000; overflow: hidden; }
-        .chatbot-window.active { display: flex; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .chatbot-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .chatbot-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px; }
-        .chatbot-messages { flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa; }
-        .chatbot-message { margin-bottom: 15px; display: flex; gap: 10px; }
-        .chatbot-message.user { flex-direction: row-reverse; }
-        .chatbot-message .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .chatbot-message.bot .avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .chatbot-message.user .avatar { background: #e2e8f0; color: #64748b; }
-        .chatbot-message .bubble { max-width: 70%; padding: 12px 16px; border-radius: 16px; line-height: 1.5; }
-        .chatbot-message.bot .bubble { background: white; color: #2d3748; border-bottom-left-radius: 4px; }
-        .chatbot-message.user .bubble { background: #667eea; color: white; border-bottom-right-radius: 4px; }
-        .chatbot-input-area { padding: 20px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
-        .chatbot-input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-        .chatbot-send { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        @media (max-width: 768px) { .chatbot-window { width: calc(100% - 40px); right: 20px; } }
     </style>
 </head>
 <body>
@@ -401,7 +380,7 @@
             <!-- Scoring System -->
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px solid #e2e8f0;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0;">🎯 Scoring System (0-20 scale)</h3>
+                    <h3 style="margin: 0;">🎯 Scoring System (0-11 scale)</h3>
                     <button onclick="saveFilters()" style="background: #667eea; color: white; padding: 10px 24px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
                         💾 Save All Changes
                     </button>
@@ -409,44 +388,19 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
                     <div style="border-left: 4px solid #10b981; padding-left: 12px;">
                         <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+5</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">High signal company</div>
-                    </div>
-                    <div style="border-left: 4px solid #10b981; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+4</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Y Combinator job</div>
-                    </div>
-                    <div style="border-left: 4px solid #10b981; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+3</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Hacker News job</div>
+                        <div style="color: #64748b; font-size: 0.9rem;">High Signal Company match</div>
                     </div>
                     <div style="border-left: 4px solid #10b981; padding-left: 12px;">
                         <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+2</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Each AI/ML keyword (max 6 points)</div>
+                        <div style="color: #64748b; font-size: 0.9rem;">Each Good Keyword match (max 6 points)</div>
                     </div>
-                    <div style="border-left: 4px solid #10b981; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+2</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Python in title</div>
-                    </div>
-                    <div style="border-left: 4px solid #10b981; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+2</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Backend in title</div>
-                    </div>
-                    <div style="border-left: 4px solid #10b981; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+2</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Infrastructure/Platform/Systems</div>
-                    </div>
-                    <div style="border-left: 4px solid #10b981; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">+1</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">RemoteOK source</div>
-                    </div>
-                    <div style="border-left: 4px solid #ef4444; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #ef4444;">-1</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Generic "full stack" (without AI)</div>
-                    </div>
-                    <div style="border-left: 4px solid #ef4444; padding-left: 12px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #ef4444;">-1</div>
-                        <div style="color: #64748b; font-size: 0.9rem;">Short title (&lt;15 chars)</div>
-                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0; color: #64748b; font-size: 0.9rem;">
+                        <strong>How it works:</strong> Jobs are scored based on your active filters above. 
+                        Maximum score is 11 points (5 for High Signal Company + 6 for Good Keywords). 
+                        Excluded Keywords and Excluded Seniority filters remove jobs entirely.
+                    </p>
                 </div>
             </div>
         </div>
@@ -564,35 +518,6 @@
     </div>
 
 
-
-    <!-- Chatbot -->
-    <button class="chatbot-toggle" onclick="toggleChatbot()">💬</button>
-    
-    <div id="chatbotWindow" class="chatbot-window">
-        <div class="chatbot-header">
-            <div>
-                <div style="font-weight: 600; font-size: 16px;">Blake's AI Assistant</div>
-                <div style="font-size: 12px; opacity: 0.9;">Ask about projects & experience</div>
-            </div>
-            <button class="chatbot-close" onclick="toggleChatbot()">×</button>
-        </div>
-        <div class="chatbot-messages" id="chatMessages">
-            <div class="chatbot-message bot">
-                <div class="avatar">🤖</div>
-                <div class="bubble">
-                    Hi! I'm Blake's AI assistant. Ask me about:
-                    <br>• Multi-Agent AI Workspace
-                    <br>• CRM Platform
-                    <br>• Sprawl RPG
-                    <br>• Skills & experience
-                </div>
-            </div>
-        </div>
-        <div class="chatbot-input-area">
-            <input type="text" class="chatbot-input" id="chatInput" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="chatbot-send" onclick="sendMessage()">Send</button>
-        </div>
-    </div>
 
     <script>
         // --- Navigation ---
@@ -985,7 +910,7 @@
         let currentNotesJobId = null;
 
         // Filter configuration
-        let goodKeywords = ["llm", "machine learning", "ai engineer", "rag", "nlp", "deep learning", "python", "ai platform", "ai infrastructure", "genai", "ml engineer", "mlops"];
+        let goodKeywords = ["llm", "machine learning", "ai", "ml", "rag", "nlp", "deep learning", "python", "ai platform", "genai", "engineer", "mlops", "backend"];
         let badKeywords = ["trainer", "training sales", "customer success", "advisor", "support rep", "marketing coordinator", "writer", "translation", "data entry", "annotator"];
         let seniorKeywords = ["principal", "staff engineer", "director", "vp", "chief", "head of"];
         let highSignalCompanies = ["openai", "anthropic", "google deepmind", "modal", "replicate", "cohere", "hugging face", "scale ai", "cursor", "perplexity"];
@@ -1367,58 +1292,6 @@
             const data = await res.json();
             showRagToast('ragListToast', data.message);
             loadRagMemories();
-        }
-
-        // --- Chatbot Functions ---
-        function toggleChatbot() {
-            const window = document.getElementById('chatbotWindow');
-            window.classList.toggle('active');
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if (!message) return;
-
-            // Add user message to chat
-            addMessage(message, 'user');
-            input.value = '';
-
-            // Show typing indicator
-            const typingId = addMessage('Typing...', 'bot');
-
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message})
-                });
-                const data = await response.json();
-
-                // Remove typing indicator and add response
-                document.getElementById(typingId).remove();
-                addMessage(data.reply, 'bot');
-            } catch (error) {
-                document.getElementById(typingId).remove();
-                addMessage('Sorry, something went wrong. Please try again.', 'bot');
-            }
-        }
-
-        function addMessage(text, sender) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageId = 'msg-' + Date.now();
-            
-            const messageHTML = `
-                <div class="chatbot-message ${sender}" id="${messageId}">
-                    <div class="avatar">${sender === 'bot' ? '🤖' : '👤'}</div>
-                    <div class="bubble">${escapeHtml(text)}</div>
-                </div>
-            `;
-            
-            messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            
-            return messageId;
         }
 
     </script>
