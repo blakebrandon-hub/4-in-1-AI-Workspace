@@ -4,7 +4,7 @@
 
 ![AI Workspace](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange.svg)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ---
